@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Access Denied</h4>
+                <hr>
+                <p>You don't have permission to access this page.</p>
+                <p class="mb-0">This area is for administrators only.</p>
+            </div>
+            
+            {% if not current_user.is_authenticated %}
+                <p>You are not logged in.</p>
+            {% endif %}
+            
+            <div class="mt-4">
+                <a href="{{ url_for('home') }}" class="btn btn-primary">Go to Home Page</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('books_page') }}" class="btn btn-secondary ms-2">My Books</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary ms-2">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

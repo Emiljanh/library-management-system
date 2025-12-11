@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>My Books</h1>
+
+    {% for book in books %}
+        <h3>{{ book.title }}</h3>
+        <p>By {{ book.author }}</p>
+        <p>Genre: {{ book.genre }}</p>
+        <p>Status: {{ book.status }}</p>
+        <p>Price: ${{ book.price }}</p>
+        <p>Added: {{ book.date_added }}</p>
+        <hr>
+    {% endfor %}
+
+{% endblock content %}
