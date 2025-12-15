@@ -1,16 +1,97 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>My Books</h1>
-
-    {% for book in books %}
-        <h3>{{ book.title }}</h3>
-        <p>By {{ book.author }}</p>
-        <p>Genre: {{ book.genre }}</p>
-        <p>Status: {{ book.status }}</p>
-        <p>Price: ${{ book.price }}</p>
-        <p>Added: {{ book.date_added }}</p>
-        <hr>
-    {% endfor %}
-
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            
+            <!-- Main Heading -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-3">📚 Library Management System</h1>
+                <p class="lead text-muted">
+                    Your personal digital library to organize, track, and manage your book collection
+                </p>
+            </div>
+            
+            {% if current_user.is_authenticated %}
+                <!-- Logged In Users -->
+                <div class="card shadow">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="mb-4">Welcome back, {{ current_user.username }}! 👋</h3>
+                        <p class="text-muted mb-4">What would you like to do today?</p>
+                        
+                        <div class="d-grid gap-3 col-md-6 mx-auto">
+                            <a href="{{ url_for('books_page') }}" class="btn btn-primary btn-lg">
+                                📖 View My Books
+                            </a>
+                            <a href="{{ url_for('new_book') }}" class="btn btn-success btn-lg">
+                                ➕ Add New Book
+                            </a>
+                            
+                            {% if current_user.is_admin %}
+                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-danger btn-lg">
+                                    🔧 Admin Dashboard
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+            {% else %}
+                <!-- New Visitors / Not Logged In -->
+                
+                <!-- Marketing Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-body p-5">
+                        <h3 class="text-center mb-4">Why Use Library Management?</h3>
+                        
+                        <div class="row text-center g-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <span style="font-size: 3rem;">📚</span>
+                                </div>
+                                <h5>Organize Books</h5>
+                                <p class="text-muted">Keep all your books organized in one place with titles, authors, and genres.</p>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <span style="font-size: 3rem;">📊</span>
+                                </div>
+                                <h5>Track Progress</h5>
+                                <p class="text-muted">Monitor your reading journey: To Read, Reading, or Completed.</p>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <span style="font-size: 3rem;">🔒</span>
+                                </div>
+                                <h5>Secure & Private</h5>
+                                <p class="text-muted">Your personal library is safe and accessible only to you.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Call to Action Card -->
+                <div class="card shadow">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="mb-3">Ready to Get Started?</h3>
+                        <p class="text-muted mb-4">Create a free account and start building your digital library today!</p>
+                        
+                        <div class="d-grid gap-3 col-md-6 mx-auto">
+                            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                                📝 Create Account
+                            </a>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">
+                                🔐 Already have an account? Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
 {% endblock content %}

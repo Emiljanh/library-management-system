@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ legend }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Title -->
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {% if form.title.errors %}
+                                {{ form.title(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.title(class="form-control", placeholder="e.g., The Great Gatsby") }}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Author -->
+                        <div class="mb-3">
+                            {{ form.author.label(class="form-label") }}
+                            {% if form.author.errors %}
+                                {{ form.author(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.author.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.author(class="form-control", placeholder="e.g., F. Scott Fitzgerald") }}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Genre -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.genre.label(class="form-label") }}
+                                {% if form.genre.errors %}
+                                    {{ form.genre(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.genre.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.genre(class="form-control") }}
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="col-md-6 mb-3">
+                                {{ form.status.label(class="form-label") }}
+                                {% if form.status.errors %}
+                                    {{ form.status(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.status.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.status(class="form-control") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="mb-3">
+                            {{ form.price.label(class="form-label") }}
+                            {% if form.price.errors %}
+                                {{ form.price(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for error in form.price.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.price(class="form-control", placeholder="0.00") }}
+                            {% endif %}
+                            <small class="form-text text-muted">Enter the price in dollars (e.g., 19.99)</small>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="mb-3">
+                            {{ form.submit(class="btn btn-primary") }}
+                            {% if book is defined and current_user.is_admin %}
+                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
+                            {% else %}
+                                <a href="{{ url_for('books_page') }}" class="btn btn-secondary">Cancel</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

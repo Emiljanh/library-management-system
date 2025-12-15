@@ -1,4 +1,119 @@
 {% extends "base.html" %}
+
 {% block content %}
-    <h1>Here you will find the book's data</h1>
-{% endblock content%}
+<div class="container mt-4">
+    <!-- Header with Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📚 My Library</h1>
+        <a href="{{ url_for('new_book') }}" class="btn btn-primary">
+            ➕ Add New Book
+        </a>
+    </div>
+    
+    {% if books %}
+        <!-- Books Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Genre</th>
+                                <th>Status</th>
+                                <th>Price</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for book in books %}
+                            <tr>
+                                <td><strong>{{ book.title }}</strong></td>
+                                <td>{{ book.author }}</td>
+                                <td><span class="badge bg-info">{{ book.genre }}</span></td>
+                                <td>
+                                    {% if book.status == 'Completed' %}
+                                        <span class="badge bg-success">✓ {{ book.status }}</span>
+                                    {% elif book.status == 'Reading' %}
+                                        <span class="badge bg-primary">📖 {{ book.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">📋 {{ book.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>${{ "%.2f"|format(book.price) }}</td>
+                                <td>{{ book.date_added.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_book', book_id=book.id) }}" 
+                                       class="btn btn-sm btn-outline-warning">
+                                        ✏️ Edit
+                                    </a>
+                                    <form method="POST" 
+                                          action="{{ url_for('delete_book', book_id=book.id) }}" 
+                                          style="display: inline;"
+                                          onsubmit="return confirm('Are you sure you want to delete \'{{ book.title }}\'?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            🗑️ Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="mt-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Books</h5>
+                            <p class="display-6">{{ books|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">To Read</h5>
+                            <p class="display-6">{{ books|selectattr('status', 'equalto', 'To Read')|list|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Reading</h5>
+                            <p class="display-6">{{ books|selectattr('status', 'equalto', 'Reading')|list|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Completed</h5>
+                            <p class="display-6">{{ books|selectattr('status', 'equalto', 'Completed')|list|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <h3>📚 No books in your library yet!</h3>
+                <p class="text-muted mb-4">Start building your reading collection by adding your first book.</p>
+                <a href="{{ url_for('new_book') }}" class="btn btn-primary btn-lg">
+                    ➕ Add Your First Book
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

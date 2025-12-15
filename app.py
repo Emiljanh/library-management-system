@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, flash, redirect, request, abort
-from forms import RegistrationForm, LoginForm
+from forms import RegistrationForm, LoginForm, BookForm, UserEditForm
 from models import db, User, Book
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
@@ -19,6 +19,13 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
+
+# ---ROUTES---
+@app.route('/')
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -33,37 +40,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
-# --- Sample data ---
-books = [
-    {
-        'title': 'The Great Gatsby',
-        'author': 'F. Scott Fitzgerald',
-        'genre': 'Fiction',
-        'status': 'Completed',
-        'price': 15.99,
-        'date_added': 'April 20, 2025'
-    },
-    {
-        'title': '1984',
-        'author': 'George Orwell',
-        'genre': 'Science Fiction',
-        'status': 'Currently Reading',
-        'price': 12.99,
-        'date_added': 'April 21, 2025'
-    },
-]
-
-# ---ROUTES---
-@app.route('/')
-@app.route('/home')
-def home():
-    return render_template('home.html', books=books)
-
-@app.route('/books')
-@login_required
-def books_page():
-    return render_template('books.html', title = 'Books')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -110,13 +86,8 @@ def account():
 @admin_required
 def admin_dashboard():
     users = User.query.all()
-    books = Book.quert.all()
-    stats = {
-        'total_users' : User.query.count(),
-        'total_books' : Book.query.count(),
-    }
-    return render_template('admin.html', title='Admin')
-
+    books = Book.query.all()
+    return render_template('admin.html', title='Admin', users=users, books=books)
 
 
 @app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
@@ -139,6 +110,118 @@ def forbidden(e):
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('errors/404.html'), 404
+
+
+# --- BOOK ROUTES ---
+@app.route('/books')
+@login_required
+def books_page():
+    books = Book.query.filter_by(user_id=current_user.id)\
+                      .order_by(Book.date_added.desc())\
+                      .all()
+    return render_template('books.html', books=books)
+
+@app.route('/book/new', methods = ['GET', 'POST'])
+@login_required
+def new_book():
+    form = BookForm()
+    if form.validate_on_submit():
+        book = Book(
+            title=form.title.data,
+            author=form.author.data,
+            genre=form.genre.data,
+            status=form.status.data,
+            price=form.price.data,
+            owner=current_user)
+
+        db.session.add(book)
+        db.session.commit()
+        flash(f' "{book.title}" has been added to you library!', 'success')
+        return redirect(url_for('books_page'))
+    return render_template('book_form.html', title = 'Add book', form=form, legend = 'Add New Book')
+
+@app.route('/book/<int:book_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_book(book_id):
+    # --- Edit an existing book ---
+    book = Book.query.get_or_404(book_id)
+    
+    # Check if user owns this book
+    if book.owner != current_user and not current_user.is_admin:
+        abort(403)
+    form = BookForm()
+    if form.validate_on_submit():
+        # Update book with form data
+        book.title = form.title.data
+        book.author = form.author.data
+        book.genre = form.genre.data
+        book.status = form.status.data
+        book.price = form.price.data
+        db.session.commit()
+        flash(f'"{book.title}" has been updated!', 'success')
+
+        if current_user.is_admin and book.owner != current_user:
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('books_page'))
+
+    elif request.method == 'GET':
+        # Pre-fill form with existing book data
+        form.title.data = book.title
+        form.author.data = book.author
+        form.genre.data = book.genre
+        form.status.data = book.status
+        form.price.data = book.price
+    
+    return render_template('book_form.html', 
+                          title= book.title,
+                          form=form, 
+                          legend='Edit Book',
+                          book=book)
+
+@app.route('/book/<int:book_id>/delete', methods=['POST'])
+@login_required
+def delete_book(book_id):
+    """Delete a book from user's library"""
+    book = Book.query.get_or_404(book_id)
+    
+    # Check if user owns this book
+    if book.owner != current_user and not current_user.is_admin:
+        abort(403)
+    
+    book_title = book.title 
+    db.session.delete(book)
+    db.session.commit()
+    flash(f'"{book_title}" has been deleted from your library!', 'success')
+    return redirect(url_for('books_page'))
+
+
+@app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = UserEditForm(original_username=user.username, original_email=user.email)
+    
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        if user.id != current_user.id:
+            user.is_admin = form.is_admin.data
+
+        db.session.commit()
+        flash(f'User {user.username} has been updated!', 'success')
+        return redirect(url_for('admin_dashboard'))
+    
+    elif request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
+        form.is_admin.data = user.is_admin
+    
+    return render_template('user_edit.html', title='Edit User', form=form, user=user)
+
+
+
+
 
 # -- Run the app ---
 if __name__ == "__main__":
