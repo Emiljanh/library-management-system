@@ -21,9 +21,10 @@
                 {% if current_user.is_authenticated %}
             <!--    <a class="nav-link" href="{{ url_for('account') }}">Account</a>
                     <a class="nav-link" href="{{ url_for('home') }}">Home</a> -->
-                    <a class="nav-link" href="{{ url_for('books_page') }}">My Books</a> 
+                    <a class="nav-link" href="{{ url_for('books_page') }}">📚My Books</a> 
+                    <a class="nav-link" href="{{ url_for('ai_query') }}">🤖AI Assistant</a>
                     {% if current_user.is_admin %}
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">⚙️Admin Dashboard</a>
                     {% endif %}
                     <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                 {% else %}

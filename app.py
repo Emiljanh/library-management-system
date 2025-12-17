@@ -4,14 +4,14 @@ from models import db, User, Book
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 from functools import wraps
-
+from ai_service import get_library_data, ask_ai
 
 
 # --- Initialize app and database ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysupersecretkey12345'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-#Initialize db with app
+
 db.init_app(app)
 
 bcrypt = Bcrypt(app)
@@ -146,12 +146,11 @@ def edit_book(book_id):
     # --- Edit an existing book ---
     book = Book.query.get_or_404(book_id)
     
-    # Check if user owns this book
     if book.owner != current_user and not current_user.is_admin:
         abort(403)
     form = BookForm()
     if form.validate_on_submit():
-        # Update book with form data
+        # --- Update book with form data ---
         book.title = form.title.data
         book.author = form.author.data
         book.genre = form.genre.data
@@ -165,7 +164,6 @@ def edit_book(book_id):
         return redirect(url_for('books_page'))
 
     elif request.method == 'GET':
-        # Pre-fill form with existing book data
         form.title.data = book.title
         form.author.data = book.author
         form.genre.data = book.genre
@@ -184,7 +182,6 @@ def delete_book(book_id):
     """Delete a book from user's library"""
     book = Book.query.get_or_404(book_id)
     
-    # Check if user owns this book
     if book.owner != current_user and not current_user.is_admin:
         abort(403)
     
@@ -222,8 +219,25 @@ def edit_user(user_id):
 
 
 
+@app.route('/ai-query', methods=['GET', 'POST'])
+@login_required
+def ai_query():
+    response = None
+
+    if request.method == 'POST':
+        question = request.form.get('question', "").strip()
+
+        library_data = get_library_data(question, current_user)
+
+        response = ask_ai(
+            question=question,
+            library_data=library_data,
+            is_admin=current_user.is_admin
+        )
+
+    return render_template("ai_query.html", response=response)
 
 # -- Run the app ---
 if __name__ == "__main__":
-    app. run (debug=True)
+    app. run(debug=True)
 

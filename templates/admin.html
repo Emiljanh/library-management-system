@@ -1,7 +1,108 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <h1 class="mb-4">Admin Dashboard</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">⚙️ Admin Dashboard</h1>
+
+    <!-- Statistics Cards Row - Admin Stats (Whole Database) -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card shadow border-0 border-start border-primary border-5">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted mb-2">Total Users</h6>
+                            <h2 class="text-primary mb-0">{{ users|length }}</h2>
+                            <div class="mt-2">
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    {{ users|selectattr('is_admin', 'equalto', true)|list|length }} Admins
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-primary" style="font-size: 3rem;">
+                                👥
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card shadow border-0 border-start border-success border-5">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted mb-2">Total Books</h6>
+                            <h2 class="text-success mb-0">{{ books|length }}</h2>
+                            <div class="mt-2">
+                                <span class="badge bg-success bg-opacity-10 text-success">
+                                    {{ books|selectattr('status', 'equalto', 'Completed')|list|length }} Completed
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-success" style="font-size: 3rem;">
+                                📚
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card shadow border-0 border-start border-info border-5">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted mb-2">Avg Books/User</h6>
+                            <h2 class="text-info mb-0">
+                                {% if users|length > 0 %}
+                                    {{ "%.1f"|format(books|length / users|length) }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </h2>
+                            <div class="mt-2">
+                                <span class="badge bg-info bg-opacity-10 text-info">
+                                    Per User
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-info" style="font-size: 3rem;">
+                                📊
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card shadow border-0 border-start border-warning border-5">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h6 class="text-uppercase text-muted mb-2">Total Value</h6>
+                            <h2 class="text-warning mb-0">${{ "%.2f"|format(books|sum(attribute='price')) }}</h2>
+                            <div class="mt-2">
+                                <span class="badge bg-warning bg-opacity-10 text-warning">
+                                    Library Worth
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="text-warning" style="font-size: 3rem;">
+                                💰
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Tabs for Users and Books -->
     <ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">

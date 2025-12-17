@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+<div class="container mt-5">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4">🤖 AI Library Assistant</h1>
+        {% if current_user.is_admin %}
+            <p class="lead text-muted">
+                <span class="badge bg-danger">Admin Mode</span> 
+                Ask about any user's books and library statistics
+            </p>
+        {% else %}
+            <p class="lead text-muted">
+                Ask me anything about your personal book collection!
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Question Form -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">💬 Ask Your Question</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">What would you like to know?</label>
+                            <textarea name="question" class="form-control form-control-lg" rows="4" 
+                                      placeholder="Type your question here..." required></textarea>
+                            <small class="form-text text-muted">
+                                💡 Be specific! The AI will analyze your library data.
+                            </small>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✨ Ask AI Assistant
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Example Questions -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow border-0 bg-light">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">💡 Example Questions</h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_admin %}
+                        <h6 class="text-primary">📊 Statistics:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li class="mb-2">📈 Who owns the most books?</li>
+                            <li class="mb-2">📚 What's the most popular genre?</li>
+                            <li class="mb-2">💰 What's the total library value?</li>
+                        </ul>
+                        
+                        <h6 class="text-primary">🔍 Search:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li class="mb-2">🔬 Which users have Science books?</li>
+                            <li class="mb-2">💵 Show me the 5 most expensive books</li>
+                            <li class="mb-2">✅ How many books are completed?</li>
+                        </ul>
+                        
+
+                    {% else %}
+                        <h6 class="text-success">📊 My Statistics:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li class="mb-2">📚 What's my favorite genre?</li>
+                            <li class="mb-2">💰 What's the total value of my books?</li>
+                            <li class="mb-2">📈 How many books do I have?</li>
+                        </ul>
+                        
+                        <h6 class="text-success">🔍 My Books:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li class="mb-2">💵 What's my most expensive book?</li>
+                            <li class="mb-2">✅ How many books have I completed?</li>
+                            <li class="mb-2">📖 What am I currently reading?</li>
+                        </ul>
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Response Section -->
+    {% if response %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">✨ AI Response</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-light border-start border-success border-5" role="alert">
+                        <h5 class="alert-heading">📖 Answer:</h5>
+                        <hr>
+                        <p class="mb-0" style="white-space: pre-line; font-size: 1.1rem; line-height: 1.8;">
+                            {{ response }}
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ url_for('ai_query') }}" class="btn btn-outline-primary">
+                            🔄 Ask Another Question
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Info Footer -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <h6 class="alert-heading">ℹ️ How it works:</h6>
+                <p class="mb-0">
+                    Wondering what you read the most, how many books you’ve finished, or what your trends look like? 
+                    Just ask, the assistant is here to help you explore your library data.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
