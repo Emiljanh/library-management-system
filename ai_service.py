@@ -9,7 +9,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 
 def is_personal_admin_question(question: str) -> bool:
     q = question.lower()
-    keywords = ["my ", "me ", "mine", "myself"]
+    keywords = ["my ", "me ", "mine", "myself", " i ",]
     return any(word in q for word in keywords)
 
 def is_recommendation_question(question: str) -> bool:
