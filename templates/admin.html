@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <h1 class="mb-4">⚙️ Admin Dashboard</h1>
 
-    <!-- Statistics Cards Row - Admin Stats (Whole Database) -->
+    <!-- Statistics Cards Row - Admin Stats  -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card shadow border-0 border-start border-primary border-5">
@@ -121,7 +121,7 @@
     </ul>
 
     <div class="tab-content" id="adminTabContent">
-        <!-- USERS TAB -->
+        <!-- Users tab -->
         <div class="tab-pane fade show active" id="users" role="tabpanel">
             <h4>All Users</h4>
             <div class="table-responsive">
@@ -154,11 +154,11 @@
                             </td>
                             <td>
                                 <a href="{{ url_for('edit_user', user_id=user.id) }}" 
-                                    class="btn btn-sm btn-warning">Edit</a>
+                                    class="btn btn-sm btn-outline-warning">Edit</a>
                                 {% if user.id != current_user.id %}
                                     <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}" 
                                           style="display: inline;">
-                                        <button type="submit" class="btn btn-sm btn-danger" 
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
                                                 onclick="return confirm('Delete user {{ user.username }}? This will also delete all their {{ user.books|length }} books!')">
                                             Delete
                                         </button>
@@ -175,7 +175,7 @@
             </div>
         </div>
 
-        <!-- BOOKS TAB -->
+        <!-- Books tab -->
         <div class="tab-pane fade" id="books" role="tabpanel">
             <h4>All Books (From All Users)</h4>
             <div class="table-responsive">
@@ -212,10 +212,10 @@
                             <td>${{ "%.2f"|format(book.price) }}</td>
                             <td>
                                 <a href="{{ url_for('edit_book', book_id=book.id) }}" 
-                                   class="btn btn-sm btn-warning">Edit</a>
+                                   class="btn btn-sm btn-outline-warning">Edit</a>
                                 <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" 
                                       style="display: inline;">
-                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
                                             onclick="return confirm('Delete {{ book.title }}?')">
                                         Delete
                                     </button>

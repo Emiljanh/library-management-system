@@ -15,16 +15,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db.init_app(app)
 
 bcrypt = Bcrypt(app)
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
-
-
-# ---ROUTES---
-@app.route('/')
-@app.route('/home')
-def home():
-    return render_template('home.html')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -40,7 +34,14 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# --- Routes ---
+@app.route('/')
+@app.route('/home')
+def home():
+    return render_template('home.html')
 
+
+# --- Authentication Routes ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -76,11 +77,8 @@ def logout():
     logout_user()
     return redirect (url_for('home'))
 
-@app.route('/account')
-@login_required
-def account():
-    return render_template('account.html', title='Account')
 
+# --- Admin Routes ---
 @app.route('/admin')
 @login_required
 @admin_required
@@ -88,6 +86,39 @@ def admin_dashboard():
     users = User.query.all()
     books = Book.query.all()
     return render_template('admin.html', title='Admin', users=users, books=books)
+
+@app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_user(user_id):
+    user = User.query.get_or_404(user_id)
+    form = UserEditForm(
+        original_username=user.username,
+        original_email=user.email
+    )
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+
+        if user.id != current_user.id:
+            user.is_admin = form.is_admin.data
+
+        db.session.commit()
+        flash(f'User {user.username} has been updated!', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    elif request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
+        form.is_admin.data = user.is_admin
+
+    return render_template(
+        'user_edit.html',
+        title='Edit User',
+        form=form,
+        user=user
+    )
 
 
 @app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
@@ -98,11 +129,15 @@ def delete_user(user_id):
     if user.id == current_user.id:
         flash('You cannot delete yourself!', 'danger')
         return redirect(url_for('admin_dashboard'))
+
     db.session.delete(user)
     db.session.commit()
+
     flash(f'User {user.username} has been deleted!', 'success')
     return redirect(url_for('admin_dashboard'))
 
+
+# --- Error Handlers ---
 @app.errorhandler(403)
 def forbidden(e):
     return render_template('errors/403.html'), 403
@@ -112,13 +147,16 @@ def page_not_found(e):
     return render_template('errors/404.html'), 404
 
 
-# --- BOOK ROUTES ---
+# --- Book Routes ---
 @app.route('/books')
 @login_required
 def books_page():
-    books = Book.query.filter_by(user_id=current_user.id)\
-                      .order_by(Book.date_added.desc())\
-                      .all()
+    books = (
+        Book.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Book.date_added.desc())
+        .all()
+    )
     return render_template('books.html', books=books)
 
 @app.route('/book/new', methods = ['GET', 'POST'])
@@ -136,31 +174,34 @@ def new_book():
 
         db.session.add(book)
         db.session.commit()
+
         flash(f' "{book.title}" has been added to you library!', 'success')
         return redirect(url_for('books_page'))
     return render_template('book_form.html', title = 'Add book', form=form, legend = 'Add New Book')
 
+
 @app.route('/book/<int:book_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_book(book_id):
-    # --- Edit an existing book ---
     book = Book.query.get_or_404(book_id)
     
     if book.owner != current_user and not current_user.is_admin:
         abort(403)
     form = BookForm()
     if form.validate_on_submit():
-        # --- Update book with form data ---
+        # --- Update book ---
         book.title = form.title.data
         book.author = form.author.data
         book.genre = form.genre.data
         book.status = form.status.data
         book.price = form.price.data
+
         db.session.commit()
         flash(f'"{book.title}" has been updated!', 'success')
 
         if current_user.is_admin and book.owner != current_user:
             return redirect(url_for('admin_dashboard'))
+
         return redirect(url_for('books_page'))
 
     elif request.method == 'GET':
@@ -175,6 +216,7 @@ def edit_book(book_id):
                           form=form, 
                           legend='Edit Book',
                           book=book)
+
 
 @app.route('/book/<int:book_id>/delete', methods=['POST'])
 @login_required
@@ -192,33 +234,7 @@ def delete_book(book_id):
     return redirect(url_for('books_page'))
 
 
-@app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_user(user_id):
-    user = User.query.get_or_404(user_id)
-    form = UserEditForm(original_username=user.username, original_email=user.email)
-    
-    if form.validate_on_submit():
-        user.username = form.username.data
-        user.email = form.email.data
-        if user.id != current_user.id:
-            user.is_admin = form.is_admin.data
-
-        db.session.commit()
-        flash(f'User {user.username} has been updated!', 'success')
-        return redirect(url_for('admin_dashboard'))
-    
-    elif request.method == 'GET':
-        form.username.data = user.username
-        form.email.data = user.email
-        form.is_admin.data = user.is_admin
-    
-    return render_template('user_edit.html', title='Edit User', form=form, user=user)
-
-
-
-
+# --- AI Route ---
 @app.route('/ai-query', methods=['GET', 'POST'])
 @login_required
 def ai_query():
@@ -226,7 +242,6 @@ def ai_query():
 
     if request.method == 'POST':
         question = request.form.get('question', "").strip()
-
         library_data = get_library_data(question, current_user)
 
         response = ask_ai(

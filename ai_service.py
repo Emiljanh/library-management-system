@@ -14,7 +14,6 @@ def is_personal_admin_question(question: str) -> bool:
 
 
 def get_books_for_user(current_user):
-    """Helper: Get books based on user permission"""
     if current_user.is_admin:
         return Book.query.all()
     return Book.query.filter_by(user_id=current_user.id).all()
