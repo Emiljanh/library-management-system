@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, url_for, flash, redirect, request, abort
 from forms import RegistrationForm, LoginForm, BookForm, UserEditForm
 from models import db, User, Book
@@ -7,12 +8,29 @@ from functools import wraps
 from ai_service import get_library_data, ask_ai
 
 
-# --- Initialize app and database ---
+# --- App Configuration ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysupersecretkey12345'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 
+# --- Database Configuration ---
+if os.getenv('DATABASE_URL'):
+    database_url = os.getenv('DATABASE_URL')
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+else:
+    # Use absolute path to database
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(basedir, 'instance', 'site.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# --- Initialize Database ---
 db.init_app(app)
+# --- Auto create tables ---
+with app.app_context():
+    db.create_all()
 
 bcrypt = Bcrypt(app)
 
