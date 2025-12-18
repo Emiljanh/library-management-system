@@ -10,8 +10,7 @@ from ai_service import get_library_data, ask_ai
 
 # --- App Configuration ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'mysupersecretkey12345'
-
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'mysupersecretkey12345')
 # --- Database Configuration ---
 if os.getenv('DATABASE_URL'):
     database_url = os.getenv('DATABASE_URL')
